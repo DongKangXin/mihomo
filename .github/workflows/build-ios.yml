@@ -25,20 +25,42 @@ jobs:
         with:
           go-version: '1.24.0'
 
-      # 使用官方 action（如果存在）
-      - name: Install gomobile
+
+      # ⭐ 关键：先清理缓存
+      - name: Clean cache
+        run: |
+          go clean -modcache
+          rm -rf $(go env GOPATH)/bin/gomobile
+          rm -rf $(go env GOPATH)/bin/gobind
+
+      # ⭐ 直接用 go install，不用 go mod download
+      - name: Install gomobile and gobind
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
           
-          # 关键：让 gobind 能找到 bind 包
-          go mod download golang.org/x/mobile
-          
-          # 初始化前先下载依赖
-          gomobile init
+          export PATH=$PATH:$(go env GOPATH)/bin
+          which gomobile
+          which gobind
 
-      - name: Build
-        run: gomobile bind -target=ios -o=Mihomo.xcframework ./ios
+      # ⭐ 初始化
+      - name: Init gomobile
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          gomobile init -v
+
+      # ⭐ 下载你项目的依赖（不包括 mobile）
+      - name: Download project dependencies
+        run: |
+          go mod tidy
+          go mod download
+
+      # ⭐ 编译
+      - name: Build iOS framework
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          export GOPATH=$(go env GOPATH)
+          gomobile bind -v -target=ios -o=Mihomo.xcframework ./ios
 
       - name: Create archive
         run: |

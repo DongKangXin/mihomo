@@ -21,22 +21,24 @@ jobs:
         with:
           go-version: '1.24.0'
 
-      - name: Install gomobile
+      # ⭐ 关键步骤：安装 gomobile 依赖
+      - name: Install gomobile dependencies
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
           gomobile init
 
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Build XCFramework
+      # ⭐ 关键步骤：下载 mobile 包
+      - name: Download mobile dependencies
         run: |
-          mkdir -p build
-          gomobile bind -target=ios,iossimulator \
-            -o build/Mihomo.xcframework \
-            -bundleid=com.mihomo.core \
-            ./ios
+          go get -u golang.org/x/mobile/cmd/gomobile
+          go get -u golang.org/x/mobile/cmd/gobind
+          go mod download
+          go mod tidy
+
+      - name: Build for iOS
+        run: |
+          gomobile bind -target=ios -o=Mihomo.xcframework ./ios
 
       - name: Create archive
         run: |

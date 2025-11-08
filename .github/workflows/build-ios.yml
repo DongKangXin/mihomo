@@ -13,32 +13,55 @@ jobs:
   build:
     runs-on: macos-14
 
+    env:
+      # ⭐ 关键：显式设置 GOPATH
+      GOPATH: /Users/runner/go
+      GOBIN: /Users/runner/go/bin
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Go
+      - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24.0'
+          go-version: '1.21'
 
-      # ⭐ 关键步骤：安装 gomobile 依赖
-      - name: Install gomobile dependencies
+      # ⭐ 清理并重新安装 gomobile
+      - name: Clean and install gomobile
         run: |
+          rm -rf $(go env GOPATH)/bin/gomobile
+          rm -rf $(go env GOPATH)/bin/gobind
+          go clean -modcache
+          
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
-          gomobile init
+          
+          export PATH=$PATH:$(go env GOPATH)/bin
+          gomobile init -v
 
-      # ⭐ 关键步骤：下载 mobile 包
-      - name: Download mobile dependencies
+      # ⭐ 确保依赖在 go.mod 中
+      - name: Download x/mobile
         run: |
-          go get -u golang.org/x/mobile/cmd/gomobile
-          go get -u golang.org/x/mobile/cmd/gobind
-          go mod download
+          go get -v golang.org/x/mobile@latest
           go mod tidy
+          go mod download
 
-      - name: Build for iOS
+      # ⭐ 显式验证
+      - name: Verify gomobile setup
         run: |
-          gomobile bind -target=ios -o=Mihomo.xcframework ./ios
+          export PATH=$PATH:$(go env GOPATH)/bin
+          which gomobile
+          which gobind
+          gomobile version
+          # 检查 mobile 源代码是否存在
+          ls -la $(go env GOPATH)/pkg/mod/golang.org/x/mobile*/
+
+      # ⭐ 编译前设置 PATH
+      - name: Build iOS framework
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          export GOPATH=$(go env GOPATH)
+          gomobile bind -v -target=ios -o=Mihomo.xcframework ./ios
 
       - name: Create archive
         run: |

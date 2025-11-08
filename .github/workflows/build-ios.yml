@@ -54,6 +54,7 @@ jobs:
         run: |
           go mod tidy
           go mod download
+          go get -v golang.org/x/mobile@latest
 
       # ⭐ 编译
       - name: Build iOS framework

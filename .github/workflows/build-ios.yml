@@ -121,14 +121,14 @@ jobs:
 
       # ⭐ 上传到 Artifacts
       - name: Upload to Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Mihomo-iOS-Framework
           path: Release/Mihomo.xcframework/
 
       # ⭐ 上传 ZIP 包
       - name: Upload ZIP package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Mihomo-iOS-Package
           path: Release/Mihomo-iOS.zip

@@ -1,0 +1,103 @@
+name: Build XCFramework
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build'
+        required: true
+
+jobs:
+  build:
+    runs-on: macos-13
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Install gomobile
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          go install golang.org/x/mobile/cmd/gobind@latest
+          gomobile init
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build XCFramework
+        run: |
+          mkdir -p build
+          gomobile bind -target=ios,iossimulator \
+            -o build/Mihomo.xcframework \
+            -bundleid=com.mihomo.core \
+            ./bridge
+
+      - name: Create archive
+        run: |
+          cd build
+          zip -r Mihomo.xcframework.zip Mihomo.xcframework
+          cd ..
+
+      - name: Calculate checksum
+        id: checksum
+        run: |
+          CHECKSUM=$(swift package compute-checksum build/Mihomo.xcframework.zip)
+          echo "CHECKSUM=$CHECKSUM" >> $GITHUB_OUTPUT
+          echo "Checksum: $CHECKSUM"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/Mihomo.xcframework.zip
+          body: |
+            ## XCFramework Checksum
+            ```
+            ${{ steps.checksum.outputs.CHECKSUM }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Package.swift
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          CHECKSUM=${{ steps.checksum.outputs.CHECKSUM }}
+          
+          cat > Package.swift << EOF
+          // swift-tools-version:5.9
+          import PackageDescription
+          
+          let package = Package(
+              name: "Mihomo",
+              platforms: [
+                  .iOS(.v13)
+              ],
+              products: [
+                  .library(
+                      name: "Mihomo",
+                      targets: ["Mihomo"]
+                  )
+              ],
+              targets: [
+                  .binaryTarget(
+                      name: "Mihomo",
+                      url: "https://github.com/${{ github.repository }}/releases/download/${TAG}/Mihomo.xcframework.zip",
+                      checksum: "${CHECKSUM}"
+                  )
+              ]
+          )
+          EOF
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Package.swift
+          git commit -m "chore: update Package.swift for ${TAG}"
+          git push

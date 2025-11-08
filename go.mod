@@ -1,6 +1,6 @@
 module github.com/metacubex/mihomo
 
-go 1.20
+go 1.24.0
 
 require (
 	github.com/bahlo/generic-list-go v0.2.0
@@ -54,14 +54,16 @@ require (
 	gitlab.com/go-extension/aes-ccm v0.0.0-20230221065045-e58665ef23c7
 	go.uber.org/automaxprocs v1.6.0
 	go4.org/netipx v0.0.0-20231129151722-fdeea329fbba
-	golang.org/x/crypto v0.33.0 // lastest version compatible with golang1.20
+	golang.org/x/crypto v0.43.0 // lastest version compatible with golang1.20
 	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e // lastest version compatible with golang1.20
-	golang.org/x/net v0.35.0 // lastest version compatible with golang1.20
-	golang.org/x/sync v0.11.0 // lastest version compatible with golang1.20
-	golang.org/x/sys v0.30.0 // lastest version compatible with golang1.20
+	golang.org/x/net v0.46.0 // lastest version compatible with golang1.20
+	golang.org/x/sync v0.17.0 // lastest version compatible with golang1.20
+	golang.org/x/sys v0.37.0 // lastest version compatible with golang1.20
 	google.golang.org/protobuf v1.34.2 // lastest version compatible with golang1.20
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+require github.com/metacubex/gvisor v0.0.0-20250919004547-6122b699a301
 
 require (
 	github.com/RyuaNerin/go-krypto v1.3.0 // indirect
@@ -90,7 +92,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mdlayher/socket v0.4.1 // indirect
 	github.com/metacubex/ascon v0.1.0 // indirect
-	github.com/metacubex/gvisor v0.0.0-20250919004547-6122b699a301 // indirect
 	github.com/metacubex/nftables v0.0.0-20250503052935-30a69ab87793 // indirect
 	github.com/metacubex/yamux v0.0.0-20250918083631-dd5f17c0be49 // indirect
 	github.com/oasisprotocol/deoxysii v0.0.0-20220228165953-2091330c22b7 // indirect
@@ -106,8 +107,8 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	gitlab.com/yawning/bsaes.git v0.0.0-20190805113838-0a714cd429ec // indirect
 	go.uber.org/mock v0.4.0 // indirect
-	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/mod v0.29.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
-	golang.org/x/tools v0.24.0 // indirect
+	golang.org/x/tools v0.38.0 // indirect
 )
